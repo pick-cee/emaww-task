@@ -19,4 +19,4 @@ input="$(cd -- "$(dirname -- "$input")" && pwd)/$(basename -- "$input")"
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 docker compose up -d --wait redis >&2
 docker compose build exporter >&2
-docker compose run --rm -T --no-deps --volume "$input:/input/config.xml:ro" exporter "${verbose[@]}" /input/config.xml
+docker compose run --rm -T --no-deps --user "$(id -u):$(id -g)" --volume "$input:/input/config.xml:ro" exporter "${verbose[@]}" /input/config.xml
