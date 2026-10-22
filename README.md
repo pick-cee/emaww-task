@@ -4,9 +4,13 @@ A TypeScript CLI that reads `config.xml` and atomically writes its subdomains an
 
 ## Run
 
-Requires Docker Engine and Docker Compose v2. From the repository:
+Requires Git, Bash, and Docker Engine with Docker Compose v2 (or Docker Desktop). Start Docker before running the commands. On Windows, use WSL or Git Bash. Node.js is only needed on the host for the development/test commands below; the importer runs inside Docker.
+
+Clone the repository and run the included example:
 
 ```sh
+git clone https://github.com/pick-cee/emaww-task.git
+cd emaww-task
 ./export.sh -v ./config.xml
 # Or any readable XML file (paths with spaces are supported):
 ./export.sh "/path/to/my config.xml"
@@ -23,8 +27,18 @@ For the included file, the result is **47 keys**:
 
 For example, `cookie:dlp-avast:amazon` contains `mmm_amz_dlp_777_ppc_m`.
 
+The terminal is the review interface. Inspect the saved data with:
+
 ```sh
+# Expected: PONG
+docker compose exec -T redis redis-cli PING
+# Expected: 47 on a fresh database
+docker compose exec -T redis redis-cli DBSIZE
+# List every key in Redis
+docker compose exec -T redis redis-cli --scan
+# Display the JSON array of 38 URLs
 docker compose exec -T redis redis-cli GET subdomains
+# Expected: mmm_amz_dlp_777_ppc_m
 docker compose exec -T redis redis-cli GET cookie:dlp-avast:amazon
 docker compose down          # stop; keep data
 docker compose down -v       # stop and DELETE persisted data
@@ -41,6 +55,8 @@ npm ci
 npm run build
 npm test
 ```
+
+Expected: **9 passing unit tests**. The end-to-end Docker import can be checked using the Redis inspection commands above.
 
 Tests cover the included XML, singleton/empty collections, string preservation, invalid input, arguments, and atomic Redis writes/failures. To run the compiled CLI against an existing Redis instance:
 
